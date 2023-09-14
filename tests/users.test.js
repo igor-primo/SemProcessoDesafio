@@ -362,3 +362,16 @@ describe("travel management failure cases", () => {
 		expect(response._body).toHaveProperty('message');
 	});
 });
+
+// TODO: put id in travel to reference the manager that registered it
+
+describe("reserving", () => {
+	test("reserving 2 seats maximum", async () => {
+		const travels = await request(app).
+			  get("/travel").
+			  set("Authorization", "Bearer "+authTokenForNonManager);
+
+		console.log(travels._body);
+		
+	});
+});

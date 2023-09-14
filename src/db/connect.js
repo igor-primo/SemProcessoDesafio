@@ -12,5 +12,6 @@ const dbconnect = _ => {
 }
 
 const dbdisconnect = _ => mongoose.disconnect();
+const dbdropall = async collection => await mongoose.connection.collections[collection].drop( _ => console.log(collection + " dropped"));
 
-module.exports = {dbconnect, dbdisconnect};
+module.exports = {dbconnect, dbdisconnect, dbdropall};

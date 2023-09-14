@@ -5,7 +5,7 @@ const usersSchema = new mongoose.Schema({
 		type: String,
 		required: [true, "E-mail deve ser informado."],
 		trim: true,
-		maxlength: [20, "E-mail não pode conter mais do que 20 caracteres."],
+		maxlength: [40, "E-mail não pode conter mais do que 40 caracteres."],
 	},
 	username: {
 		type: String,

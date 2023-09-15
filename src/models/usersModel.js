@@ -11,7 +11,7 @@ const usersSchema = new mongoose.Schema({
 		type: String,
 		required: [true, "Nome de usuário deve ser informado."],
 		trim: true,
-		maxlength: [10, "Nome de usuário não pode conter mais do que 10 caracteres."],
+		maxlength: [20, "Nome de usuário não pode conter mais do que 20 caracteres."],
 	},
 	password: {
 		type: String,

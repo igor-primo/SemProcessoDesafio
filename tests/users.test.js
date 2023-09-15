@@ -2,11 +2,21 @@ const request = require("supertest");
 const app = require("../src/app.js");
 const {dbconnect, dbdisconnect, dbdropall} = require("../src/db/connect.js");
  
-beforeAll(async () => { 
+// beforeAll(async () => { 
+// 	await dbconnect(); 
+// });
+
+// afterAll(async () => {
+// 	await dbdropall('users');
+// 	await dbdropall('travelmanagements');
+// 	await dbdisconnect();
+// });
+
+beforeEach(async () => { 
 	await dbconnect(); 
 });
 
-afterAll(async () => {
+afterEach(async () => {
 	await dbdropall('users');
 	await dbdropall('travelmanagements');
 	await dbdisconnect();
@@ -19,17 +29,26 @@ const signupBody = {
 	isManager: false
 };
 
+const signin = async (params) => {
+	const {email, password} = params;
+	return request(app).
+		post("/auth/signin").
+		  send({email, password});
+};
+
+const signup = async (params) => {
+	const {username, email, password, isManager} = params;
+	return request(app).
+		post("/auth/signup").
+		send({username, email, password, isManager});
+};
+
 describe("user authentication", () => {
 
 	test("signup user", async () => {
+		const {password, ...body} = signupBody;
 
-		const body = {...signupBody};
-
-		const response = await request(app).
-			post("/auth/signup").
-			  send(body);
-
-		delete body.password;
+		const response = await signup({...signupBody});
 
 		expect(response._body).toEqual(
 			expect.objectContaining(body)
@@ -37,12 +56,10 @@ describe("user authentication", () => {
 	});
 
 	test("log in user", async () => {
-
+		await signup({...signupBody});
 		const {username, isManager, ...body} = signupBody;
 
-		const response = await request(app).
-			  post("/auth/signin").
-			  send(body);
+		const response = await signin(body);
 
 		expect(response._body).toHaveProperty('email'); 
 	});
@@ -55,9 +72,7 @@ describe("user authentication failure cases", () => {
 	test("signup username ommitted", async () => {
 		const {username, ...body} = signupBody;
 
-		const response = await request(app).
-			  post("/auth/signup").
-			  send(body);
+		const response = await signup(body)
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -66,9 +81,7 @@ describe("user authentication failure cases", () => {
 	test("signup email ommitted", async () => {
 		const {email, ...body} = signupBody;
 
-		const response = await request(app).
-			  post("/auth/signup").
-			  send(body);
+		const response = await signup(body)
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -77,9 +90,7 @@ describe("user authentication failure cases", () => {
 	test("signup password ommitted", async () => {
 		const {password, ...body} = signupBody;
 
-		const response = await request(app).
-			  post("/auth/signup").
-			  send(body);
+		const response = await signup(body)
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -88,9 +99,7 @@ describe("user authentication failure cases", () => {
 	test("signup isManager ommitted", async () => {
 		const {isManager, ...body} = signupBody;
 
-		const response = await request(app).
-			  post("/auth/signup").
-			  send(body);
+		const response = await signup(body)
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -99,9 +108,7 @@ describe("user authentication failure cases", () => {
 	test("signin email omitted", async () => {
 		const {username, isManager, email, ...body} = signupBody;
 
-		const response = await request(app).
-			  post("/auth/signup").
-			  send(body);
+		const response = await signup(body)
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -110,9 +117,7 @@ describe("user authentication failure cases", () => {
 	test("signin password omitted", async () => {
 		const {username, isManager, password, ...body} = signupBody;
 
-		const response = await request(app).
-			  post("/auth/signup").
-			  send(body);
+		const response = await signup(body)
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -130,83 +135,99 @@ const travelInfo = {
 	scheduled: true
 };
 
-let authTokenForManager;
-let authTokenForNonManager;
+const userManager = {
+	username: 'Igor Manager',
+	email: 'igor-manager@email.com',
+	password: '123manager456',
+	isManager: true
+};
+
+const userNonManager = {
+	username: 'Igor Non Manager',
+	email: 'igor-non-manager@email.com',
+	password: '123nonmanager456',
+	isManager: false
+};
+
+const postTravel = async (params) => {
+	const {authToken, travel} = params;
+
+	return request(app).
+		post("/travel").
+		set("Authorization", "Bearer " + authToken).
+		  send(travel);
+};
+
+const getTravels = async (params) => {
+	const {authToken} = params;
+
+	return request(app).
+		get("/travel").
+		  set("Authorization", "Bearer " + authToken);
+};
+
+const changeScheduledStatus = async (params) => {
+	const {authToken, travel} = params;
+	const {_id, scheduled} = travel;
+
+	return request(app).
+		put("/travel/change_scheduled_status").
+		send({ _id, scheduled }).
+		  set("Authorization", "Bearer " + authToken);
+}
+
+const rescheduleTravel = async (params) => {
+	const {authToken, travelParams} = params;
+	const {_id, date, departureTime, arrivalTime} = travelParams;
+
+	return request(app).
+		put("/travel/" + _id + "/reschedule").
+		send({date, departureTime, arrivalTime}).
+		  set("Authorization", "Bearer " + authToken);
+
+}
+
+const modifyTravel = async (field, userType) => {
+
+	const user = userType == 'manager' ? userManager : userNonManager;
+
+	await signup(user);
+	const { _body } = await signin(user);
+	const {authToken} = _body;
+
+	const response = await postTravel({ authToken, travel: { ...travelInfo } });
+
+	const travelModified = { ...response._body };
+
+	travelModified[field] = new Date().toISOString();
+	return rescheduleTravel({authToken, travelParams: { ...travelModified }});
+};
 
 describe("travel management", () => {
 
-	test("get auth token for manager", async () => {
+	test("travel registration by manager", async () => {
 
-		const userData = {
-			username: 'Igor Primo',
-			email: 'igor-manager@email.com',
-			password: '123mudar456',
-			isManager: true
-		}
-	
-		// signup
-		const resultSignup = await request(app).
-			post("/auth/signup").
-			send(userData);
+		await signup(userManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
 
-		const { username, isManager, ...signinData } = userData;
-
-		// login
-		const loginResponse = await request(app).
-			post("/auth/signin").
-			  send(signinData);
-
-		authTokenForManager = loginResponse._body.authToken;
-
-		return;
-	});
-
-	test("get auth token for non manager", async () => {
-			
-		const userData = {
-			username: 'Igor Primo',
-			email: 'igor-non-manager@email.com',
-			password: '123mudar456',
-			isManager: false
-		}
-	
-		// signup
-		const resultSignup = await request(app).
-			post("/auth/signup").
-			send(userData);
-
-		const { username, isManager, ...signinData } = userData;
-
-		// login
-		const loginResponse = await request(app).
-			post("/auth/signin").
-			  send(signinData);
-
-		authTokenForNonManager = loginResponse._body.authToken;
-
-		return;
-	});
-
-	test("register travel by manager", async () => {
-
-		const travel = {...travelInfo};  
-
-		const response = await request(app).
-			  post("/travel").
-			  set("Authorization", "Bearer "+authTokenForManager).
-			  send(travel);
-
+		const response = await postTravel({authToken, travel: {...travelInfo}});
+		
 		expect(response._body).toEqual(
-			expect.objectContaining(travel)
+			expect.objectContaining(travelInfo)
 		);
 	})
 	
 	test("get travels for manager", async () => {
 
-		const response = await request(app).
-			  get("/travel").
-			  set("Authorization", "Bearer "+authTokenForManager);
+		await signup(userManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
 
+		await postTravel({authToken, travel: {...travelInfo}});
+
+		const response = await getTravels({authToken});
+		
 		expect(response._body).toEqual(
 			expect.arrayContaining(
 				[expect.objectContaining(travelInfo)]
@@ -217,9 +238,16 @@ describe("travel management", () => {
 
 	test("get travels for non manager", async () => {
 
-		const response = await request(app).
-			  get("/travel").
-			  set("Authorization", "Bearer "+authTokenForNonManager);
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		await postTravel({authToken, travel: {...travelInfo}});
+
+		const response = await getTravels({authToken: authTokenNonManager});
 
 		expect(response._body).toEqual(
 			expect.arrayContaining(
@@ -230,21 +258,16 @@ describe("travel management", () => {
 	});
 
 	test("travel cancellation by manager", async () => {
-		const travel = {...travelInfo};
 
-		const resultTravel = await request(app).
-			  post("/travel").
-			  send(travel).
-			  set("Authorization", "Bearer "+authTokenForManager);
+		await signup(userManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
 
-		const {_id, scheduled} = resultTravel._body;
+		const response = await postTravel({authToken, travel: {...travelInfo}});
 
-		const response = await request(app).
-			  put("/travel/change_scheduled_status").
-			  send({_id, scheduled}).
-			  set("Authorization", "Bearer "+authTokenForManager);
+		const responsePut = await changeScheduledStatus({authToken, travel: {...response._body}});
 
-		expect(response._body).toEqual(
+		expect(responsePut._body).toEqual(
 			expect.objectContaining({
 				scheduled: expect.anything()
 			})
@@ -254,53 +277,31 @@ describe("travel management", () => {
 
 	// TODO: how to do more complex puts properly with mongo?
 
-	test("travel rescheduling by manager", async () => {
-		const travel = {...travelInfo};
-		const travelModified = {...travel};
-
-		const resultTravel = await request(app).
-			  post("/travel").
-			  send(travel).
-			  set("Authorization", "Bearer "+authTokenForManager);
-
-		const {_id} = resultTravel._body;
-
-		travelModified.date = new Date().toISOString();
-		const resultFirstPut = await request(app).
-			  put("/travel/"+_id+"/reschedule").
-			  send(travelModified).
-			  set("Authorization", "Bearer "+authTokenForManager);
-
-		expect(resultFirstPut._body).toEqual(
+	test("travel rescheduling date by manager", async () => {
+		const resultRescheduled = await modifyTravel('date', 'manager');
+		expect(resultRescheduled._body).toEqual(
 			expect.objectContaining({
 				date: expect.anything()
 			})
 		);
+	});
 
-		travelModified.departureTime = new Date().toISOString();
-		const resultSecondPut = await request(app).
-			  put("/travel/"+_id+"/reschedule").
-			  send(travelModified).
-			  set("Authorization", "Bearer "+authTokenForManager);
-		
-		expect(resultSecondPut._body).toEqual(
+	test("travel rescheduling departureTime by manager", async () => {
+		const resultRescheduled = await modifyTravel('departureTime', 'manager');
+		expect(resultRescheduled._body).toEqual(
 			expect.objectContaining({
-				date: expect.anything()
-			})
-		);		
-		
-		travelModified.arrivalTime = new Date().toISOString();
-		const resultThirdPut = await request(app).
-			  put("/travel/"+_id+"/reschedule").
-			  send(travelModified).
-			  set("Authorization", "Bearer "+authTokenForManager);
-		
-		expect(resultThirdPut._body).toEqual(
-			expect.objectContaining({
-				date: expect.anything()
+				departureTime: expect.anything()
 			})
 		);
+	});
 
+	test("travel rescheduling arrivalTime by manager", async () => {
+		const resultRescheduled = await modifyTravel('arrivalTime', 'manager');
+		expect(resultRescheduled._body).toEqual(
+			expect.objectContaining({
+				arrivalTime: expect.anything()
+			})
+		);
 	});
 
 });
@@ -311,67 +312,58 @@ describe("travel management failure cases", () => {
 
 	test("travel registration by non manager", async () => {
 
-		const travel = {...travelInfo};
+		await signup(userNonManager);
+		const {_body} = await signin(userNonManager);
+		const {authToken} = _body;
 
-		const response = await request(app).
-			  post("/travel").
-			  set("Authorization", "Bearer "+authTokenForNonManager).
-			  send(travel);
+		const response = await postTravel({authToken, travel: {...travelInfo}});
 
 		expect(response.statusCode).toBe(404);
 		expect(response._body).toHaveProperty('message');
 	});
 
 	test("travel cancellation by non manager", async () => {
-		const travel = {...travelInfo};
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userNonManager);
+		const {authToken} = _body;
 
-		const resultTravel = await request(app).
-			  post("/travel").
-			  send(travel).
-			  set("Authorization", "Bearer "+authTokenForNonManager);
+		const response = await postTravel({authToken, travel: {...travelInfo}});
 
-		const {_id, scheduled} = resultTravel._body;
+		const responsePut = await changeScheduledStatus({authToken, travel: {...response._body}});
 
-		const response = await request(app).
-			  put("/travel/change_scheduled_status").
-			  send({_id, scheduled}).
-			  set("Authorization", "Bearer "+authTokenForNonManager);
-
-		expect(response.statusCode).toBe(404);
-		expect(response._body).toHaveProperty('message');
+		expect(responsePut.statusCode).toBe(404);
+		expect(responsePut._body).toHaveProperty('message');
 	});
 
-	test("travel rescheduling by non manager", async () => {
-		const travel = {...travelInfo};
-		const travelModified = {...travel};
-
-		const resultTravel = await request(app).
-			  post("/travel").
-			  send(travel).
-			  set("Authorization", "Bearer "+authTokenForManager);
-
-		const {_id} = resultTravel._body;
-
-		travelModified.date = new Date().toISOString();
-		const response = await request(app).
-			  put("/travel/"+_id+"/reschedule").
-			  send(travelModified).
-			  set("Authorization", "Bearer "+authTokenForNonManager);
-
-		expect(response.statusCode).toBe(404);
-		expect(response._body).toHaveProperty('message');
+	test("travel rescheduling date by non manager", async () => {
+		const resultRescheduled = await modifyTravel('date', 'nonmanager');
+		expect(resultRescheduled.statusCode).toBe(404);
+		expect(resultRescheduled._body).toHaveProperty('message');
 	});
+
+	test("travel rescheduling departureTime by non manager", async () => {
+		const resultRescheduled = await modifyTravel('departureTime', 'nonmanager');
+		expect(resultRescheduled.statusCode).toBe(404);
+		expect(resultRescheduled._body).toHaveProperty('message');
+	});
+
+	test("travel rescheduling arrivalTime by non manager", async () => {
+		const resultRescheduled = await modifyTravel('arrivalTime', 'nonmanager');
+		expect(resultRescheduled.statusCode).toBe(404);
+		expect(resultRescheduled._body).toHaveProperty('message');
+	});
+
 });
 
 // TODO: put id in travel to reference the manager that registered it
+
 
 describe("reserving", () => {
 	test("reserving 2 seats maximum", async () => {
 		const travels = await request(app).
 			  get("/travel").
 			  set("Authorization", "Bearer "+authTokenForNonManager);
-
-		console.log(travels._body);
 		
 	});
 });

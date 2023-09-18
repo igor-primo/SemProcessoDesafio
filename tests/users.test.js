@@ -13,6 +13,8 @@ afterEach(async () => {
 	await dbdisconnect();
 });
 
+// helper data and helper functions
+
 const signupBody = {
 	username: 'Igor Primo',
 	email: 'igor@email.com',
@@ -33,6 +35,112 @@ const signup = async (params) => {
 		post("/auth/signup").
 		send({username, email, password, isManager});
 };
+// TODO: put id in travel to reference the manager that registered it
+
+const reserveTravel = async (params) => {
+	const {authToken, _id, numSeatsToReserve} = params;
+
+	return request(app).
+		put("/passage/"+_id+"/reserve").
+		send({numSeatsToReserve}).
+		set("Authorization", "Bearer "+authToken);
+}
+
+const getPassages = async (params) => {
+	const {authToken} = params;
+
+	return request(app).
+		get("/passage/user/get").
+		set("Authorization", "Bearer "+authToken);
+}
+
+const getSpecificPassage = async (params) => {
+	const {authToken, _id} = params;
+
+	return request(app).
+		get("/passage/"+_id+"/get").
+		set("Authorization", "Bearer "+authToken);
+}
+
+const travelInfo = {
+	destiny: "Mars",
+	date: new Date("2023-10-10").toISOString(),
+	departureTime: new Date().toISOString(),
+	arrivalTime: new Date().toISOString(),
+	price: "$Σ300,00",
+	seatsAvailable: 25,
+	scheduled: true
+};
+
+const userManager = {
+	username: 'Igor Manager',
+	email: 'igor-manager@email.com',
+	password: '123manager456',
+	isManager: true
+};
+
+const userNonManager = {
+	username: 'Igor Non Manager',
+	email: 'igor-non-manager@email.com',
+	password: '123nonmanager456',
+	isManager: false
+};
+
+const postTravel = async (params) => {
+	const {authToken, travel} = params;
+
+	return request(app).
+		post("/travel").
+		set("Authorization", "Bearer " + authToken).
+		  send(travel);
+};
+
+const getTravels = async (params) => {
+	const {authToken} = params;
+
+	return request(app).
+		get("/travel").
+		  set("Authorization", "Bearer " + authToken);
+};
+
+const changeScheduledStatus = async (params) => {
+	const {authToken, travel} = params;
+	const {_id, scheduled} = travel;
+
+	return request(app).
+		put("/travel/change_scheduled_status").
+		send({ _id, scheduled }).
+		  set("Authorization", "Bearer " + authToken);
+}
+
+const rescheduleTravel = async (params) => {
+	const {authToken, travelParams} = params;
+	const {_id, date, departureTime, arrivalTime} = travelParams;
+
+	return request(app).
+		put("/travel/" + _id + "/reschedule").
+		send({date, departureTime, arrivalTime}).
+		  set("Authorization", "Bearer " + authToken);
+
+}
+
+const modifyTravel = async (field, userType) => {
+
+	const user = userType == 'manager' ? userManager : userNonManager;
+
+	await signup(user);
+	const { _body } = await signin(user);
+	const {authToken} = _body;
+
+	const response = await postTravel({ authToken, travel: { ...travelInfo } });
+
+	const travelModified = { ...response._body };
+
+	travelModified[field] = new Date().toISOString();
+	return rescheduleTravel({authToken, travelParams: { ...travelModified }});
+};
+
+// real tests
 
 describe("user authentication", () => {
 
@@ -132,83 +240,6 @@ describe("user authentication failure cases", () => {
 	
 });
 
-const travelInfo = {
-	destiny: "Mars",
-	date: new Date("2023-10-10").toISOString(),
-	departureTime: new Date().toISOString(),
-	arrivalTime: new Date().toISOString(),
-	price: "$Σ300,00",
-	seatsAvailable: 25,
-	scheduled: true
-};
-
-const userManager = {
-	username: 'Igor Manager',
-	email: 'igor-manager@email.com',
-	password: '123manager456',
-	isManager: true
-};
-
-const userNonManager = {
-	username: 'Igor Non Manager',
-	email: 'igor-non-manager@email.com',
-	password: '123nonmanager456',
-	isManager: false
-};
-
-const postTravel = async (params) => {
-	const {authToken, travel} = params;
-
-	return request(app).
-		post("/travel").
-		set("Authorization", "Bearer " + authToken).
-		  send(travel);
-};
-
-const getTravels = async (params) => {
-	const {authToken} = params;
-
-	return request(app).
-		get("/travel").
-		  set("Authorization", "Bearer " + authToken);
-};
-
-const changeScheduledStatus = async (params) => {
-	const {authToken, travel} = params;
-	const {_id, scheduled} = travel;
-
-	return request(app).
-		put("/travel/change_scheduled_status").
-		send({ _id, scheduled }).
-		  set("Authorization", "Bearer " + authToken);
-}
-
-const rescheduleTravel = async (params) => {
-	const {authToken, travelParams} = params;
-	const {_id, date, departureTime, arrivalTime} = travelParams;
-
-	return request(app).
-		put("/travel/" + _id + "/reschedule").
-		send({date, departureTime, arrivalTime}).
-		  set("Authorization", "Bearer " + authToken);
-
-}
-
-const modifyTravel = async (field, userType) => {
-
-	const user = userType == 'manager' ? userManager : userNonManager;
-
-	await signup(user);
-	const { _body } = await signin(user);
-	const {authToken} = _body;
-
-	const response = await postTravel({ authToken, travel: { ...travelInfo } });
-
-	const travelModified = { ...response._body };
-
-	travelModified[field] = new Date().toISOString();
-	return rescheduleTravel({authToken, travelParams: { ...travelModified }});
-};
 
 describe("travel management", () => {
 
@@ -363,32 +394,6 @@ describe("travel management failure cases", () => {
 
 });
 
-// TODO: put id in travel to reference the manager that registered it
-
-const reserveTravel = async (params) => {
-	const {authToken, _id, numSeatsToReserve} = params;
-
-	return request(app).
-		put("/passage/"+_id+"/reserve").
-		send({numSeatsToReserve}).
-		set("Authorization", "Bearer "+authToken);
-}
-
-const getPassages = async (params) => {
-	const {authToken} = params;
-
-	return request(app).
-		get("/passage/user/get").
-		set("Authorization", "Bearer "+authToken);
-}
-
-const getSpecificPassage = async (params) => {
-	const {authToken, _id} = params;
-
-	return request(app).
-		get("/passage/"+_id+"/get").
-		set("Authorization", "Bearer "+authToken);
-}
 
 describe("passage management", () => {
 	test("get passages from a user", async () => {

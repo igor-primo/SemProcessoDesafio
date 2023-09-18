@@ -99,18 +99,34 @@ describe("user authentication failure cases", () => {
 	test("signin email omitted", async () => {
 		const {username, isManager, email, ...body} = signupBody;
 
-		const response = await signup(body)
+		await signup(signupBody);
+		const response = await signin(body)
 
-		expect(response.statusCode).toBe(400);
+		expect(response.statusCode).toBe(404);
 		expect(response._body).toHaveProperty('message');
 	});
 
 	test("signin password omitted", async () => {
 		const {username, isManager, password, ...body} = signupBody;
 
-		const response = await signup(body)
+		await signup(signupBody);
+		const response = await signin(body)
 
-		expect(response.statusCode).toBe(400);
+		expect(response.statusCode).toBe(404);
+		expect(response._body).toHaveProperty('message');
+	});
+
+	test("authenticate without authToken", async () => {
+		const {username, isManager, ...body} = signupBody;
+
+		await signup(signupBody);
+		await signin(body);
+
+		const response = await request(app).
+			get("/travel").
+			  set("Authorization", "Bearer ");
+
+		expect(response.statusCode).toBe(404);
 		expect(response._body).toHaveProperty('message');
 	});
 	
@@ -121,7 +137,7 @@ const travelInfo = {
 	date: new Date("2023-10-10").toISOString(),
 	departureTime: new Date().toISOString(),
 	arrivalTime: new Date().toISOString(),
-	price: "$M300,00",
+	price: "$Σ300,00",
 	seatsAvailable: 25,
 	scheduled: true
 };

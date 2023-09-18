@@ -7,12 +7,10 @@ module.exports = {
 	getPassage: wpr(async (req, res) => {
 		// Gets passage in detail
 		const {_id} = req.params;
-		console.log(_id);
 
 		const passage = await passageModel.findById(_id);
-		console.log(passage);
 		const travel = await managementModel.findById(passage.travelId);
-		console.log(travel);
+
 		return res.status(200).json({passage, travel});
 	}),
 	getPassagesFromUser: wpr(async (req, res) => {

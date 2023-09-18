@@ -29,7 +29,7 @@ module.exports = {
 		const {email, password} = req.body;
 
 		if(!password)
-			throw new customError(400, "Senha não informada.");
+			throw new customError(404, "Senha não informada.");
 
 		const result = await usersModel.find({email});
 		result.forEach(obj => {

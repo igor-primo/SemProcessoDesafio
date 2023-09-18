@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "jest --config tests/jest.config.js --detectOpenHandles tests/users.test.js"
+    "test": "jest --config tests/jest.config.js --detectOpenHandles tests/app.test.js"
   },
   "keywords": [],
   "author": "",

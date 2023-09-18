@@ -17,6 +17,7 @@ module.exports = {
 			seatsAvailable,
 			scheduled
 		} = req.body;
+		const {_id} = req.user;
 
 		const result = await managementModel.create({
 			destiny,
@@ -25,7 +26,8 @@ module.exports = {
 			arrivalTime,
 			price,
 			seatsAvailable,
-			scheduled
+			scheduled,
+			managerUserId: _id
 		});
 
 		return res.status(200).json(result);

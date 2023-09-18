@@ -32,6 +32,12 @@ const managementSchema = new mongoose.Schema({
 		type: Boolean,
 		required: [true, "O estado de cancelamento ou agendamento deve ser informado."],
 	},
+	// In what scenario should I expect a travel to have several managers?
+	// I assume there is only one manager for a single TravelManagement document.
+	managerUserId: {
+		type: mongoose.ObjectId,
+		required:  true,
+	},
 });
 
 module.exports = mongoose.model("TravelManagement", managementSchema);

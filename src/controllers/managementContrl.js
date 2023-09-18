@@ -65,18 +65,21 @@ module.exports = {
 
 		// TODO: should I do this with aggregate?
 		await session.withTransaction(async () => {
-			const {seatsAvailable} = await managementModel.findById(_id);
-			const newSeatsAvailable = seatsAvailable - numSeatsToReserve;
+			try {
+				const { seatsAvailable } = await managementModel.findById(_id);
+				const newSeatsAvailable = seatsAvailable - numSeatsToReserve;
 
-			if(newSeatsAvailable < 0) {
+				if (newSeatsAvailable < 0)
+					throw new customError(403, 'Não existe número suficiente de cadeiras para serem reservadas.');
+
+				resultTransaction = await managementModel.findByIdAndUpdate(_id, { seatsAvailable: newSeatsAvailable }, {
+					new: true,
+					runValidators: true
+				});
+			} catch (err) {
 				session.endSession();
-				throw new customError(403, 'Não existe número suficiente de cadeiras para serem reservadas.');
+				throw err;
 			}
-
-			resultTransaction = await managementModel.findByIdAndUpdate(_id, {seatsAvailable: newSeatsAvailable}, {
-				new: true,
-				runValidators: true
-			});
 		});
 		session.endSession();
 

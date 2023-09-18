@@ -2,7 +2,8 @@ const router = require("express").Router();
 const {getTravels,
 	   postTravel,
 	   changeScheduledStatus,
-	   reschedule
+	   reschedule,
+	   reserve
 } = require("../controllers/managementContrl");
 const {authenticate, authenticateManager} = require("../controllers/usersContrl");
 
@@ -21,5 +22,9 @@ router.route("/travel/:_id/reschedule").
 	all(authenticate).
 	all(authenticateManager).
 	put(reschedule);
+
+router.route("/travel/:_id/reserve").
+	all(authenticate).
+	put(reserve);
 
 module.exports = router;

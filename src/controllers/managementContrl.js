@@ -1,4 +1,5 @@
 const wpr = require("../wrappers/nextWpr");
+const {customError} = require("../wrappers/errorWpr");
 const managementModel = require("../models/managementModel");
 
 module.exports = {
@@ -51,5 +52,34 @@ module.exports = {
 				});
 
 		return res.status(200).json(updatedResource);
+	}),
+	reserve: wpr(async (req, res) => {
+		const {numSeatsToReserve} = req.body;
+		const {_id} = req.params;
+
+		if(2 < numSeatsToReserve)
+			throw new customError(403, 'O número máximo de cadeiras que podem ser reservadas é 2.');
+
+		const session = await managementModel.startSession();
+		let resultTransaction = {};
+
+		// TODO: should I do this with aggregate?
+		await session.withTransaction(async () => {
+			const {seatsAvailable} = await managementModel.findById(_id);
+			const newSeatsAvailable = seatsAvailable - numSeatsToReserve;
+
+			if(newSeatsAvailable < 0) {
+				session.endSession();
+				throw new customError(403, 'Não existe número suficiente de cadeiras para serem reservadas.');
+			}
+
+			resultTransaction = await managementModel.findByIdAndUpdate(_id, {seatsAvailable: newSeatsAvailable}, {
+				new: true,
+				runValidators: true
+			});
+		});
+		session.endSession();
+
+		return res.status(200).json(resultTransaction);
 	}),
 };

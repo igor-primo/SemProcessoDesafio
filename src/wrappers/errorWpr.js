@@ -8,14 +8,13 @@ class customError extends Error {
 }
 
 const errorHandler = (err, req, res, next) => {
+	const {statusCode, message} = err;
 	
 	if(err instanceof customError)
-		return res.status(err.statusCode).json({message: err.message});
-
-	const message = Object.values(err.errors).map(val => val.message);
+		return res.status(statusCode).json({message});
 
 	if(err instanceof mongoose.Error.ValidationError)
-		return res.status(400).json({message: message});
+		return res.status(400).json({message});
 
 	return res.status(500).json({message: "Erro interno de sistema."});
 }

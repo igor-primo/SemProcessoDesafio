@@ -4,14 +4,6 @@ const wpr = require("../wrappers/nextWpr.js");
 const {customError} = require("../wrappers/errorWpr.js");
 const usersModel = require("../models/usersModel.js");
 
-function removePassword(obj) {
-	return Object.keys(obj).reduce((object, key) => {
-		if(key !== "password")
-			object[key] = obj[key]
-		return object;
-	}, {});
-}
-
 module.exports = {
 	signup: wpr(async (req, res, next) => {
 		const { email, username, password, isManager } =

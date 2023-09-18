@@ -2,16 +2,6 @@ const request = require("supertest");
 const app = require("../src/app.js");
 const {dbconnect, dbdisconnect, dbdropall} = require("../src/db/connect.js");
  
-// beforeAll(async () => { 
-// 	await dbconnect(); 
-// });
-
-// afterAll(async () => {
-// 	await dbdropall('users');
-// 	await dbdropall('travelmanagements');
-// 	await dbdisconnect();
-// });
-
 beforeEach(async () => { 
 	await dbconnect(); 
 });
@@ -358,12 +348,82 @@ describe("travel management failure cases", () => {
 
 // TODO: put id in travel to reference the manager that registered it
 
+const reserveTravel = async (params) => {
+	const {authToken, _id, numSeatsToReserve} = params;
+
+	return request(app).
+		put("/travel/"+_id+"/reserve").
+		send({numSeatsToReserve}).
+		set("Authorization", "Bearer "+authToken);
+}
 
 describe("reserving", () => {
-	test("reserving 2 seats maximum", async () => {
-		const travels = await request(app).
-			  get("/travel").
-			  set("Authorization", "Bearer "+authTokenForNonManager);
-		
+	test("reserving up until 2 seats", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		const travel = {...travelInfo};
+		travel.seatsAvailable = 2;
+
+		const travelPosted = await postTravel({authToken, travel});
+		const {_id} = travelPosted._body;
+
+		const travelToTest = {...travel};
+		travelToTest.seatsAvailable -= 2;
+
+		// TODO: improvement: how to represent seats in db?
+		const result = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
+
+		expect(result._body).toEqual(
+			expect.objectContaining(travelToTest)
+		);
 	});
+});
+
+describe("reserving failure cases", () => {
+
+	test("reserving up until 2 seats when there is less than 2", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		const travel = {...travelInfo};
+		travel.seatsAvailable = 1;
+
+		const travelPosted = await postTravel({authToken, travel});
+		const {_id} = travelPosted._body;
+
+		const result = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
+
+		expect(result.statusCode).toBe(403);
+		expect(result._body).toHaveProperty('message');
+	});
+
+	test("reserving more than 2 seats", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		const travel = {...travelInfo};
+		travel.seatsAvailable = 4;
+
+		const travelPosted = await postTravel({authToken, travel});
+		const {_id} = travelPosted._body;
+
+		const result = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 3});
+
+		expect(result.statusCode).toBe(403);
+		expect(result._body).toHaveProperty('message');
+	});
+
 });

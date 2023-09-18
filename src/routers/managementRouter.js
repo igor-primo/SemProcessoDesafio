@@ -23,8 +23,4 @@ router.route("/travel/:_id/reschedule").
 	all(authenticateManager).
 	put(reschedule);
 
-router.route("/travel/:_id/reserve").
-	all(authenticate).
-	put(reserve);
-
 module.exports = router;

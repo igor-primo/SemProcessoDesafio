@@ -9,6 +9,7 @@ beforeEach(async () => {
 afterEach(async () => {
 	await dbdropall('users');
 	await dbdropall('travelmanagements');
+	await dbdropall('passages');
 	await dbdisconnect();
 });
 
@@ -352,12 +353,80 @@ const reserveTravel = async (params) => {
 	const {authToken, _id, numSeatsToReserve} = params;
 
 	return request(app).
-		put("/travel/"+_id+"/reserve").
+		put("/passage/"+_id+"/reserve").
 		send({numSeatsToReserve}).
 		set("Authorization", "Bearer "+authToken);
 }
 
-describe("reserving", () => {
+const getPassages = async (params) => {
+	const {authToken} = params;
+
+	return request(app).
+		get("/passage/user/get").
+		set("Authorization", "Bearer "+authToken);
+}
+
+const getSpecificPassage = async (params) => {
+	const {authToken, _id} = params;
+
+	return request(app).
+		get("/passage/"+_id+"/get").
+		set("Authorization", "Bearer "+authToken);
+}
+
+describe("passage management", () => {
+	test("get passages from a user", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		for(let i=0;i<10;i++) {
+			const travel = { ...travelInfo };
+			travel.seatsAvailable = 2;
+
+			const travelPosted = await postTravel({ authToken, travel });
+			const { _id } = travelPosted._body;
+
+			await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
+		}
+
+		const passages = await getPassages({authToken: authTokenNonManager});
+
+		expect(passages._body).toEqual(
+			expect.arrayContaining(
+				[expect.objectContaining({passage: expect.anything(), travel: expect.anything()})]
+			)
+		);
+	});
+
+	test("get passage in detail", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		const travel = { ...travelInfo };
+		travel.seatsAvailable = 2;
+
+		const travelPosted = await postTravel({ authToken, travel });
+		const { _id } = travelPosted._body;
+
+		const passageData = await reserveTravel({ authToken: authTokenNonManager, _id, numSeatsToReserve: 2 });
+		const passageId = passageData._body._id;
+		
+		const passage = await getSpecificPassage({authToken: authTokenNonManager, _id: passageId});
+
+		expect(passage._body).toEqual(
+				expect.objectContaining({passage: expect.anything(), travel: expect.anything()})
+		);
+
+	});
+
 	test("reserving up until 2 seats", async () => {
 		await signup(userManager);
 		await signup(userNonManager);
@@ -379,12 +448,16 @@ describe("reserving", () => {
 		const result = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
 
 		expect(result._body).toEqual(
-			expect.objectContaining(travelToTest)
+			expect.objectContaining({
+				scheduled: expect.anything(),
+				travelId: expect.anything(),
+				userId: expect.anything(),
+			})
 		);
 	});
 });
 
-describe("reserving failure cases", () => {
+describe("passage management failure cases", () => {
 
 	test("reserving up until 2 seats when there is less than 2", async () => {
 		await signup(userManager);
@@ -425,5 +498,4 @@ describe("reserving failure cases", () => {
 		expect(result.statusCode).toBe(403);
 		expect(result._body).toHaveProperty('message');
 	});
-
 });

@@ -74,10 +74,10 @@ module.exports = {
 		// TODO: add filters and pagination to getTravels
 
 		const {_id} = req.body;	// _id of the chosen travel
-		const {_idPassage} = req.params;
+		const {_idP} = req.params;
 
 		const newPassage = await passageModel.
-			findByIdAndUpdate(_idPassage,
+			findByIdAndUpdate(_idP,
 				{ travelId: _id },
 				{
 					new: true, runValidators: true
@@ -86,11 +86,11 @@ module.exports = {
 		return res.status(200).json(newPassage);
 	}),
 	cancelPassage: wpr(async (req, res) => {
-		const {_id, scheduled} = req.body;
+		const {_id} = req.params;
 
 		const newPassage = await passageModel.
 			findByIdAndUpdate(_id,
-				{ scheduled: !scheduled },
+				{ scheduled: false },
 				{
 					new: true, runValidators: true
 				});

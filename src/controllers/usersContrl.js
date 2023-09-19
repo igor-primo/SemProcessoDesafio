@@ -48,6 +48,10 @@ module.exports = {
 	}),
 	authenticate: wpr(async (req, res, next) => {
 		const authHeader = req.headers['authorization'];
+
+		if(!authHeader)
+			throw new customError(404, "Usuário não pôde ser autenticado.");			
+
 		const authToken = authHeader.split(" ")[1];
 
 		if(!authToken)

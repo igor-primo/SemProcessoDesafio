@@ -21,10 +21,10 @@ router.route("/passage/:_id/get").
 router.route("/passage/:_id/reserve").
 	put(reserve);
 
-router.route("/passage/:_id/change").
+router.route("/passage/:_idP/change").
 	put(changePassage);
 
-router.route("/passage/:id/cancel").
+router.route("/passage/:_id/cancel").
 	put(cancelPassage);
 
 module.exports = router;

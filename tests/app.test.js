@@ -140,6 +140,23 @@ const modifyTravel = async (field, userType) => {
 	return rescheduleTravel({authToken, travelParams: { ...travelModified }});
 };
 
+const _cancelPassage = async (params) => {
+	const {authToken, _id} = params;
+
+	return request(app).
+		put("/passage/"+_id+"/cancel").
+		set("Authorization", "Bearer "+authToken);
+}
+
+const _changePassage = async (params) => {
+	const {authToken, _id, travelId} = params;
+
+	return request(app).
+	 	put("/passage/"+_id+"/change").
+		send({_id: travelId}).
+		set("Authorization", "Bearer "+authToken);
+}
+
 // real tests
 
 describe("user authentication", () => {
@@ -475,6 +492,63 @@ describe("passage management", () => {
 				userId: expect.anything(),
 			})
 		);
+	});
+
+	test("cancel passage", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		const travelData = await postTravel({authToken, travel: {...travelInfo}});
+		const {_id} = travelData._body;
+
+		const passageData = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
+
+		const passageId = passageData._body._id;
+		const response = await _cancelPassage({authToken: authTokenNonManager, _id: passageId});
+
+		expect(response._body).toEqual(
+			expect.objectContaining({
+				scheduled: expect.anything()
+			})
+		);
+	});
+
+	test("change passage", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		const travelData = await postTravel({authToken, travel: {...travelInfo}});
+		const {_id} = travelData._body;
+
+		const newTravelData = await postTravel({authToken, travel: {...travelInfo}});
+
+		const passageData = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
+		const passageId = passageData._body._id;
+
+		const travels = await getTravels({authToken: authTokenNonManager});
+
+		let newTravelId = {};
+		travels._body.forEach(el => {
+			if(el._id != _id)
+				newTravelId = el._id;
+		});
+
+		const response = await _changePassage({authToken: authTokenNonManager, _id: passageId, travelId: newTravelId});
+
+		expect(response._body).toEqual(
+			expect.objectContaining({
+				_id: expect.anything()
+			})
+		);
+		
 	});
 });
 

@@ -50,7 +50,6 @@ documento de uma passagem particular apontar para outra viagem.
 * TODO
 - Cartão de confirmação.
 - Reembolso.
-- Organizar coleções.
 * Possíveis melhoras
 1) Implementar rotação de chaves assimétricas.
 2) Procurar e implementar técnicas melhores
@@ -63,3 +62,4 @@ documento de uma passagem particular apontar para outra viagem.
 6) Implementar uma boa estratégia de versionamento de API.
 7) Utilizar um balanceador de carga como PM2 para gerenciar processos
    executando a aplicação.
+8) Implementar funcionalidades de remoção de dados.

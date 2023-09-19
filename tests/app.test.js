@@ -7,9 +7,9 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-	await dbdropall('users');
-	await dbdropall('travelmanagements');
-	await dbdropall('passages');
+	// await dbdropall('users');
+	// await dbdropall('travelmanagements');
+	// await dbdropall('passages');
 	await dbdisconnect();
 });
 

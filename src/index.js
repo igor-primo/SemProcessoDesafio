@@ -1,4 +1,5 @@
 const server = require("./app.js");
+const {dbconnect, dbdisconnect} = require("./db/connect.js");
 
 const PORT = process.env.PORT || 8082;
 

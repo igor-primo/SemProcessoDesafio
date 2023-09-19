@@ -1,0 +1,75 @@
+services:
+
+  space-travel:
+    container_name: space-travel-api-dev
+    image: node:18-alpine
+    restart: "no"
+    ports:
+      - "8082:8082"
+    working_dir: /src
+    volumes:
+      - ./:/src
+    environment:
+      PORT: 8082
+      MONGODB_CRED: mongodb://root:example@mongodb:27017/
+      PRIVATE_KEY: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCrU4Dv1PKd5pej
+        +mBvVpAOgh/+JhOgVP8lUmkLSKj099oTwH7CNZMJ7H4Secqf7vdJTyxZhl541zql
+        WjJEVdVgottWAmUm3OuRewA137dQMyXsxKFQQJYqC5ZyozqeML1LP31Drsi6m+tV
+        IbzghfC3xk/SKU+mWhtiJ0qCTX10ZVsyuMWd1yjUq+pBDbm1gtdnCqXnaZ9173A0
+        e3lpQzLe9UnrUgbUdyeXTorTJFrSUoNZHVfizsXC6RQ5jj9SSWSrlCZnzoScxWhW
+        nBL5OQcNqTq3YNO22/HKhsYZVWuEoNzx2HUuRvFd1n7A+KHnGjzK7C8xG78kVG8D
+        kq0mZoHtAgMBAAECggEAFILMvum5mhnPMbx56xpr6LC/b8fTNbC3UxqIpOcwAxPh
+        Mdgr1MhhMCD1/vRBw9/yDv7Bin5BtSnfRYiE2BWGlCkrJSLoRTzRnvsgzVJZOerF
+        sZDg1yDEWYhFnLfZ/rJLF0UklAPK2DxuciS13hNq/DVrvPdhJ8NF3/xgOTVZvaNq
+        n0Jaj/eVvaPEgQ9DmlbZ1fcyyfnKnO4lnioK4azEbb3Lmti/3lkAj2gTu3r1iZzf
+        0XFXIGMwldr/TjEhYvG4gmQhMGfrdG5Fj5EC6xv2iQdjyh3+y8NvWOxDb6guuShH
+        7lR0NmTbQhiW88LNnAUcFZLRePvIwx/k3+wl6Ik/KQKBgQDUUch2ixJz7qPylj1j
+        KX68ALOk4t+xUmzcrxSGyih2lF/79jnFlm4AHjC/4WijpJL2ZlJiyZmx5whkdrHr
+        PHa7zP8iWYZnobBJtXrXDmlYEFvPr2tjek4fLqQqYhtuX/ZX2X9aMUD8GMfOt1aY
+        zQ5LWYjauC66RuJkDevNtm33DwKBgQDOkrresRM4J28RSTK5CA2g89jGHkvJgaZi
+        Tss2XdwWETc599Lt8Ixa0P7jsNiXP/D30+OKWSXoCbN9zSgrflPBE2szSKZZAUpv
+        KSuYDhYKk6e0uK3z/yPw4ElPTaeKo+IEdIrg0URKAacXhcIYzTd3MiAU/Ay95uLe
+        6uqdPsuXQwKBgGLYnFpMDtA4Zs12kqfK1rzSGtCF6xyTwijPvd+u2D20gCc+j9Dk
+        YtvdMlbyqxOcd+sM4ggp0UsYwzh6ZgSdRq3SF2m3gjJW/UqjmcfrZrHgE85R3c4X
+        T62GulkdCaZOONLXaEnmKlnzc3pSspc6yA/eZC9nliGVBKsOLBy+dN2TAoGAB4Ou
+        6IroeBJ3J9nRzolMdZ5pNEvF1f6xXsIfAktHxkW6DJHHSoCFmogfvYihWF8rFNjQ
+        XigACQDRVrIv0+U0hsF+FM9/vZ0eaAzHWTCp/JiCcUCGk2mklQ6TnB7nCVQM1Lyo
+        kKUMJuUIfwKOnPhaHCvmntzMWdwcRJ+nCTFPlqECgYAC2oq4JR3C5SZKSTG4c2iw
+        cvDsjXI7tWIcr25phcM2unXbFXXN6wGPZG6fAXXJNso0xExNkYDxGMJdnAGuDWn6
+        TbeTKtqsqunC84s5/mAVbMx7iTzLddLorp92iLHvp5M9DBoXLU4V2FlFzzWGm4t2
+        V6l/cVCPNAKzqLWIGwAjBA==
+        -----END PRIVATE KEY-----
+      PUBLIC_KEY: |
+        -----BEGIN PUBLIC KEY-----
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq1OA79TyneaXo/pgb1aQ
+        DoIf/iYToFT/JVJpC0io9PfaE8B+wjWTCex+EnnKn+73SU8sWYZeeNc6pVoyRFXV
+        YKLbVgJlJtzrkXsANd+3UDMl7MShUECWKguWcqM6njC9Sz99Q67IupvrVSG84IXw
+        t8ZP0ilPplobYidKgk19dGVbMrjFndco1KvqQQ25tYLXZwql52mfde9wNHt5aUMy
+        3vVJ61IG1Hcnl06K0yRa0lKDWR1X4s7FwukUOY4/Uklkq5QmZ86EnMVoVpwS+TkH
+        Dak6t2DTttvxyobGGVVrhKDc8dh1LkbxXdZ+wPih5xo8yuwvMRu/JFRvA5KtJmaB
+        7QIDAQAB
+        -----END PUBLIC KEY-----
+    command: /bin/sh -c "npm i && npm start"
+
+  mongodb:
+    image: mongo
+    restart: always
+    logging:
+      driver: none
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    logging:
+      driver: none
+    ports:
+      - 8083:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongodb:27017/    

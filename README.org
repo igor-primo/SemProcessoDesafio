@@ -1,1 +1,65 @@
 #+TITLE: SemProcessoDesafio
+* Sobre o sistema
+Esse é um sistema de reserva de viagens espaciais escrito em
+Node.js. Os principais autores são os passageiros e o gerente.
+O sistema possui três conjuntos de funcionalidade: autenticação,
+gerenciamento de viagem e gerenciamento de passages.
+O banco de dados possui 3 coleções: Users, para aramazenar documentos
+de autenticação; TravelManagement, para documentos que detalham
+viagens; PassageManagement, para documentos que detalham passagens.
+** Autenticação
+Tanto passageiros quanto o gerente precisam se autenticar para
+utilizarem as funcionalidades principais do sistema.
+A autenticação é feita por signup e signin. A autorização de usuários
+é feita através de Json Web Tokens (JWT) assinados utilizando chaves
+assimétricas e algoritmo RSA Signature with SHA-256. Nesse primeiro
+momento, **rotação de chaves não é implementado**. A motivação para
+essas escolhas são:
+1) Parsers de dados serializados em formato JSON são comuns e são
+   de simples manipulação em Node.js.
+2) Podem ser assinados digitalmente.
+** Gerenciamento de viagem
+O gestor é capaz de incluir novas viagens, cancelar viagens e remarcar
+viagens existentes. Com o intuito de identificar o gestor que
+cadastrou uma viagem, cada documento possui um campo com o _id do gestor
+que cadastrou o documento.
+** Gerenciamento de passagens
+Os passageiros são capazes de visualizar viagens detalhadamente,
+reservar até 2 cadeiras em uma viagem e receber um cartão de
+confirmação após reserva. Também são capazes de trocar data ou destino
+de passagem, havendo disponibilidade, e de cancelar passagens,
+recebendo reembolso.
+Para implementação dessa funcionalidade, cada documento detalhando uma
+passagem possui o _id da viagem à qual a passagem autoriza o seu
+possuidor a desfrutar. Desse modo, a funcionalidade de troca de data
+ou destino pelo possuidor da passagem consiste apenas em fazer o
+documento de uma passagem particular apontar para outra viagem.
+* Detalhes de implementação
+- A aplicação utiliza o padrão MVC onde as Views são interpretadas
+  como os endpoints em src/routers.
+- Para reutilização de código o diretório src/wrappers possui wrappers
+  para ocasiões repetitivas e foram utilizados na medida do
+  possível. nextWpr.js possui uma função que visa eliminar a
+  necessidade de repetição de blocos try/catch. errorWpr.js define uma
+  classe para modelar erros customizados e uma função middleware
+  para onde é afunilado os erros encontrados.
+- Os testes foram concentrados em um único arquivo, tests/app.tests.js
+  por simplicidade em um sistema pequeno. Na medida do possível foi
+  utilizado reutilização de código. Foi utilizado o framework Jest por
+  ser simples e possuir funcionalidade de coverage.
+* TODO
+- Cartão de confirmação.
+- Reembolso.
+- Organizar coleções.
+* Possíveis melhoras
+1) Implementar rotação de chaves assimétricas.
+2) Procurar e implementar técnicas melhores
+   de referenciação de documentos no Mongo.
+3) Fazer documentação dos endpoints via Swagger.
+4) Refinar e clarificar testes especificando mais detalhes esperados
+   das saídas.
+5) Refatoração do arquivo de testes para utilizar padrões OO para
+   verificar possibilidade de uma melhor reutilização de código.
+6) Implementar uma boa estratégia de versionamento de API.
+7) Utilizar um balanceador de carga como PM2 para gerenciar processos
+   executando a aplicação.

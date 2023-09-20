@@ -47,19 +47,20 @@ documento de uma passagem particular apontar para outra viagem.
   por simplicidade em um sistema pequeno. Na medida do possível foi
   utilizado reutilização de código. Foi utilizado o framework Jest por
   ser simples e possuir funcionalidade de coverage.
-* TODO
+* TODO TODO
 - Cartão de confirmação.
 - Reembolso.
+- Fortificar models.
 * Possíveis melhoras
-1) Implementar rotação de chaves assimétricas.
-2) Procurar e implementar técnicas melhores
-   de referenciação de documentos no Mongo.
-3) Fazer documentação dos endpoints via Swagger.
-4) Refinar e clarificar testes especificando mais detalhes esperados
-   das saídas.
-5) Refatoração do arquivo de testes para utilizar padrões OO para
-   verificar possibilidade de uma melhor reutilização de código.
-6) Implementar uma boa estratégia de versionamento de API.
-7) Utilizar um balanceador de carga como PM2 para gerenciar processos
-   executando a aplicação.
-8) Implementar funcionalidades de remoção de dados.
+- Implementar rotação de chaves assimétricas.
+- Procurar e implementar técnicas melhores
+  de referenciação de documentos no Mongo.
+- Fazer documentação dos endpoints via Swagger.
+- Refinar e clarificar testes especificando mais detalhes esperados
+  das saídas.
+- Refatoração do arquivo de testes para utilizar padrões OO para
+  verificar possibilidade de uma melhor reutilização de código.
+- Implementar uma boa estratégia de versionamento de API.
+- Utilizar um balanceador de carga como PM2 para gerenciar processos
+  executando a aplicação.
+- Implementar funcionalidades de remoção de dados.

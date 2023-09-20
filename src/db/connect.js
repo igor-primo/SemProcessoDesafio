@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const connectionString = process.env.MONGODB_CRED;
 
-const dbconnect = _ => {
+const dbconnect = (dbName) => {
 	const options = {
-		dbName: 'SpaceTravel',
+		dbName: dbName,
 		useNewUrlParser: true, 
 		// useCreateIndex: true, 
 		// useFindAndModify: false,

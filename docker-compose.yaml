@@ -51,7 +51,7 @@ services:
         Dak6t2DTttvxyobGGVVrhKDc8dh1LkbxXdZ+wPih5xo8yuwvMRu/JFRvA5KtJmaB
         7QIDAQAB
         -----END PUBLIC KEY-----
-    command: /bin/sh -c "npm i && npm start"
+    command: /bin/sh -c "npm i && npm run test && npm start"
 
   mongodb:
     image: mongo

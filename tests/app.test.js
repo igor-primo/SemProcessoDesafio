@@ -3,13 +3,13 @@ const app = require("../src/app.js");
 const {dbconnect, dbdisconnect, dbdropall} = require("../src/db/connect.js");
  
 beforeEach(async () => { 
-	await dbconnect(); 
+	await dbconnect('SpaceTravelTest'); 
 });
 
 afterEach(async () => {
-	// await dbdropall('users');
-	// await dbdropall('travelmanagements');
-	// await dbdropall('passages');
+	await dbdropall('users');
+	await dbdropall('travelmanagements');
+	await dbdropall('passages');
 	await dbdisconnect();
 });
 
@@ -188,7 +188,7 @@ describe("user authentication failure cases", () => {
 	test("signup username ommitted", async () => {
 		const {username, ...body} = signupBody;
 
-		const response = await signup(body)
+		const response = await signup(body);
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -216,6 +216,14 @@ describe("user authentication failure cases", () => {
 		const {isManager, ...body} = signupBody;
 
 		const response = await signup(body)
+
+		expect(response.statusCode).toBe(400);
+		expect(response._body).toHaveProperty('message');
+	});
+
+	test("unique parameters", async () => {
+		await signup(signupBody);
+		const response = await signup(signupBody);
 
 		expect(response.statusCode).toBe(400);
 		expect(response._body).toHaveProperty('message');
@@ -254,7 +262,7 @@ describe("user authentication failure cases", () => {
 		expect(response.statusCode).toBe(404);
 		expect(response._body).toHaveProperty('message');
 	});
-	
+
 });
 
 

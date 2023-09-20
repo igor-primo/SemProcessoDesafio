@@ -2,6 +2,13 @@ const wpr = require("../wrappers/nextWpr");
 const {customError} = require("../wrappers/errorWpr");
 const managementModel = require("../models/managementModel");
 const passageModel = require("../models/passageModel");
+const billingModel = require("../models/billingModel");
+
+const validateCard = (cardNumber, expirationDate, cvv, paymentMethod) => {
+	// I leave this function to check whether such date is actually given
+	// I will leave it mocked
+	return cardNumber && expirationDate && cvv && paymentMethod;
+}
 
 module.exports = {
 	getPassage: wpr(async (req, res) => {
@@ -28,43 +35,67 @@ module.exports = {
 		return res.status(200).json(dataArray);
 	}),
 	reserve: wpr(async (req, res) => {
-		const {numSeatsToReserve} = req.body;
-		const {_id} = req.params;
-		const userId = req.user._id;
+		const {numSeatsToReserve, cardNumber, expirationDate, cvv, paymentMethod} = req.body;
 
 		if(2 < numSeatsToReserve)
 			throw new customError(403, 'O número máximo de cadeiras que podem ser reservadas é 2.');
 
+		if(!validateCard(cardNumber, expirationDate, cvv, paymentMethod))
+			throw new customError(404, "Pagamento não pôde ser confirmado.");
+		
+		const {_id} = req.params; // travel id
+		const userId = req.user._id;
+
 		const session = await managementModel.startSession();
+
 		let passage = {};
+		let confirmationCard = {};
 
 		// TODO: should I do this with aggregate?
 		await session.withTransaction(async () => {
 			try {
-				let resultTransaction = {};
 				const { seatsAvailable } = await managementModel.findById(_id);
 				const newSeatsAvailable = seatsAvailable - numSeatsToReserve;
 
 				if (newSeatsAvailable < 0)
 					throw new customError(403, 'Não existe número suficiente de cadeiras para serem reservadas.');
 
-				resultTransaction = await managementModel.findByIdAndUpdate(_id, { seatsAvailable: newSeatsAvailable }, {
+				const resultTransaction = await managementModel.findByIdAndUpdate(_id, { seatsAvailable: newSeatsAvailable }, {
 					new: true,
 					runValidators: true
 				});
 
-				// create passage
-
+				const amount = resultTransaction.price;
 				const travelId = resultTransaction._id;
 				passage = await passageModel.create({userId, travelId, scheduled: true});
+
+				const passageId = passage._id;
+
+				const card = {
+					transactionDate: new Date().toISOString(),
+					merchantName: 'SpaceTravelForReal LTDA.',
+					merchantContactNumber: '9999-9999',
+					paymentDetails: {
+						amount: amount,
+						currency: 'Estalecas ($∑)',
+						description: 'Esse cartão de confirmação prova que seu possuidor comprou '+numSeatsToReserve+' assentos para viagem espacial.',
+						paymentMethod: paymentMethod,
+						billing: null
+					},
+					message: 'Pagamento realizado com sucesso!',
+					passageId: passageId
+				};
+
+				confirmationCard = await billingModel.create(card);
 			} catch (err) {
 				session.endSession();
 				throw err;
 			}
+
 		});
 		session.endSession();
-		// TODO: return confirmation card
-		return res.status(200).json(passage);
+
+		return res.status(200).json({passage, confirmationCard});
 	}),
 	changePassage: wpr(async (req, res) => {
 		// I assume that the user will receive a list of available travels by a function

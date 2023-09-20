@@ -42,7 +42,13 @@ const reserveTravel = async (params) => {
 
 	return request(app).
 		put("/passage/"+_id+"/reserve").
-		send({numSeatsToReserve}).
+		send({
+			numSeatsToReserve,
+			cardNumber: '123566',
+			expirationDate: new Date(),
+			cvv: '2023',
+			paymentMethod: 'debit'
+		}).
 		set("Authorization", "Bearer "+authToken);
 }
 
@@ -421,6 +427,34 @@ describe("travel management failure cases", () => {
 
 
 describe("passage management", () => {
+	test("reserving up until 2 seats", async () => {
+		await signup(userManager);
+		await signup(userNonManager);
+		const {_body} = await signin(userManager);
+		const {authToken} = _body;
+		const nonManager = await signin(userNonManager);
+		const authTokenNonManager = nonManager._body.authToken;
+
+		const travel = {...travelInfo};
+		travel.seatsAvailable = 2;
+
+		const travelPosted = await postTravel({authToken, travel});
+		const {_id} = travelPosted._body;
+
+		const travelToTest = {...travel};
+		travelToTest.seatsAvailable -= 2;
+
+		// TODO: improvement: how to represent seats in db?
+		const result = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
+
+		expect(result._body).toEqual(
+			expect.objectContaining({
+				passage: expect.anything(),
+				confirmationCard: expect.anything(),
+			})
+		);
+	});
+
 	test("get passages from a user", async () => {
 		await signup(userManager);
 		await signup(userNonManager);
@@ -463,7 +497,7 @@ describe("passage management", () => {
 		const { _id } = travelPosted._body;
 
 		const passageData = await reserveTravel({ authToken: authTokenNonManager, _id, numSeatsToReserve: 2 });
-		const passageId = passageData._body._id;
+		const passageId = passageData._body.passage._id;
 		
 		const passage = await getSpecificPassage({authToken: authTokenNonManager, _id: passageId});
 
@@ -471,35 +505,6 @@ describe("passage management", () => {
 				expect.objectContaining({passage: expect.anything(), travel: expect.anything()})
 		);
 
-	});
-
-	test("reserving up until 2 seats", async () => {
-		await signup(userManager);
-		await signup(userNonManager);
-		const {_body} = await signin(userManager);
-		const {authToken} = _body;
-		const nonManager = await signin(userNonManager);
-		const authTokenNonManager = nonManager._body.authToken;
-
-		const travel = {...travelInfo};
-		travel.seatsAvailable = 2;
-
-		const travelPosted = await postTravel({authToken, travel});
-		const {_id} = travelPosted._body;
-
-		const travelToTest = {...travel};
-		travelToTest.seatsAvailable -= 2;
-
-		// TODO: improvement: how to represent seats in db?
-		const result = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
-
-		expect(result._body).toEqual(
-			expect.objectContaining({
-				scheduled: expect.anything(),
-				travelId: expect.anything(),
-				userId: expect.anything(),
-			})
-		);
 	});
 
 	test("cancel passage", async () => {
@@ -515,7 +520,7 @@ describe("passage management", () => {
 
 		const passageData = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
 
-		const passageId = passageData._body._id;
+		const passageId = passageData._body.passage._id;
 		const response = await _cancelPassage({authToken: authTokenNonManager, _id: passageId});
 
 		expect(response._body).toEqual(
@@ -539,7 +544,7 @@ describe("passage management", () => {
 		const newTravelData = await postTravel({authToken, travel: {...travelInfo}});
 
 		const passageData = await reserveTravel({authToken: authTokenNonManager, _id, numSeatsToReserve: 2});
-		const passageId = passageData._body._id;
+		const passageId = passageData._body.passage._id;
 
 		const travels = await getTravels({authToken: authTokenNonManager});
 

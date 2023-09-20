@@ -48,7 +48,6 @@ documento de uma passagem particular apontar para outra viagem.
   utilizado reutilização de código. Foi utilizado o framework Jest por
   ser simples e possuir funcionalidade de coverage.
 * TODO TODO
-- Cartão de confirmação.
 - Reembolso.
 - Fortificar models.
 * Possíveis melhoras

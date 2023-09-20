@@ -35,8 +35,8 @@ module.exports = {
 		result.forEach(obj => {
 			const objReal = obj.toObject();
 			if (bcrypt.compareSync(password, objReal.password) == true) {
-				const _id = objReal._id;
-				authToken = sign({_id}, process.env.PRIVATE_KEY, {expiresIn: "12h", algorithm: "RS256"});
+				const {_id, isManager} = objReal;
+				authToken = sign({_id, isManager}, process.env.PRIVATE_KEY, {expiresIn: "12h", algorithm: "RS256"});
 				objReal.authToken = authToken;
 
 				delete objReal.password;
@@ -50,7 +50,7 @@ module.exports = {
 		const authHeader = req.headers['authorization'];
 
 		if(!authHeader)
-			throw new customError(404, "Usuário não pôde ser autenticado.");			
+			throw new customError(404, "Usuário não pôde ser autenticado.");
 
 		const authToken = authHeader.split(" ")[1];
 
@@ -65,17 +65,13 @@ module.exports = {
 
 		req.user = {};
 		req.user._id = result._id;
+		req.user.isManager = result.isManager;
 		
 		next();
 	}),
 	authenticateManager: wpr(async (req, res, next) => {
-		const { _id } = req.user;
-		const result = await usersModel.findById(_id).select('isManager');
-
-		const resultData = result.toObject();
-
-		if(!resultData.isManager)
-			throw  new customError(404, "Usuário precisa ser gestor para acessar esse recurso.");
+		if(!req.user.isManager)
+			throw new customError(404, "Usuário precisa ser gestor para acessar esse recurso.");
 
 		next();
 	}),

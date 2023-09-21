@@ -34,6 +34,8 @@ passagem possui o _id da viagem à qual a passagem autoriza o seu
 possuidor a desfrutar. Desse modo, a funcionalidade de troca de data
 ou destino pelo possuidor da passagem consiste apenas em fazer o
 documento de uma passagem particular apontar para outra viagem.
+Cada passagem também tem um objeto com dados de cobrança e reembolso
+associado a ela por referenciação de _id.
 * Detalhes de implementação
 - A aplicação utiliza o padrão MVC onde as Views são interpretadas
   como os endpoints em src/routers.
@@ -48,7 +50,6 @@ documento de uma passagem particular apontar para outra viagem.
   utilizado reutilização de código. Foi utilizado o framework Jest por
   ser simples e possuir funcionalidade de coverage.
 * TODO TODO
-- Reembolso.
 - Fortificar models.
 * Possíveis melhoras
 - Implementar rotação de chaves assimétricas.

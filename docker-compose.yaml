@@ -2,6 +2,8 @@ services:
 
   space-travel:
     container_name: space-travel-api-dev
+    depends_on:
+      - mongodb
     image: node:18-alpine
     restart: "no"
     ports:
@@ -63,6 +65,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
 
   mongo-express:
+    depends_on:
+      - mongodb
     image: mongo-express
     restart: always
     logging:

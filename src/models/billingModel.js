@@ -48,6 +48,11 @@ const billingSchema = new mongoose.Schema({
 	passageId: {
 		type: mongoose.ObjectId,
 		required: true
+	},
+	refunded: {
+		type: Boolean,
+		required: false,
+		default: false
 	}
 });
 

@@ -525,7 +525,8 @@ describe("passage management", () => {
 
 		expect(response._body).toEqual(
 			expect.objectContaining({
-				scheduled: expect.anything()
+				passage: expect.anything(),
+				refundCard: expect.anything()
 			})
 		);
 	});

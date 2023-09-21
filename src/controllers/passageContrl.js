@@ -119,13 +119,28 @@ module.exports = {
 	cancelPassage: wpr(async (req, res) => {
 		const {_id} = req.params;
 
-		const newPassage = await passageModel.
-			findByIdAndUpdate(_id,
-				{ scheduled: false },
-				{
-					new: true, runValidators: true
-				});
+		const session = await passageModel.startSession();
+		
+		let newPassage = {};
+		let refundCard = {};
+		await session.withTransaction(async () => {
+			try {
+				newPassage = await passageModel.
+					findByIdAndUpdate(_id,
+						{ scheduled: false },
+						{
+							new: true, runValidators: true
+						});
 
-		return res.status(200).json(newPassage);
+				const passageId = newPassage._id;
+				refundCard = await billingModel.findOneAndUpdate({ passageId: passageId }, { refunded: true }, { new: true, runValidators: true });
+			} catch(err) {
+				session.endSession();
+				throw err;
+			}
+		});
+		session.endSession();
+
+		return res.status(200).json({passage: newPassage, refundCard});
 	}),
 };

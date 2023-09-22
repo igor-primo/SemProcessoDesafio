@@ -12,6 +12,10 @@ const passageSchema = new mongoose.Schema({
 	scheduled: {
 		type: Boolean,
 		required: [true, "O estado de cancelamento ou agendamento deve ser informado."]
+	},
+	numSeatsReserved: {
+		type: Number,
+		required: [true, 'O número de assentos reservados deve ser informado.']
 	}
 });
 

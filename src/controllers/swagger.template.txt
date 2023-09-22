@@ -1,0 +1,27 @@
+/*
+  #swagger.tags = ['']
+  #swagger.description = ''
+  #swagger.parameters['jwt'] = {
+  in: 'header',
+  name: 'Authorization',
+  description: 'Token de autenticação',
+  required: true,
+  type: 'string',
+  }
+  #swagger.parameters[''] = {
+  in: '',
+  name: '',
+  description: '',
+  required: true,
+  type: '',
+  schema: { $ref: '#/definitions/' }
+  }
+  #swagger.responses[] = {
+  description: '',
+  schema: { $ref: '#/definitions/' }
+  }
+  #swagger.responses[500] = {
+  description: 'Erro interno de sistema.',
+  schema: { $ref: '#/definitions/internalErrorMsg' }
+  }
+*/

@@ -1,7 +1,7 @@
 services:
 
   space-travel:
-    container_name: space-travel-api-dev
+    container_name: space-travel-api
     depends_on:
       - mongodb
     image: node:18-alpine
@@ -53,27 +53,30 @@ services:
         Dak6t2DTttvxyobGGVVrhKDc8dh1LkbxXdZ+wPih5xo8yuwvMRu/JFRvA5KtJmaB
         7QIDAQAB
         -----END PUBLIC KEY-----
-    command: /bin/sh -c "npm i && npm run test && npm start"
+    command: /bin/sh -c "npm i && npm run test && npm run gendoc && npm start"
 
   mongodb:
+    container_name: mongodb
     image: mongo
     restart: always
     logging:
-      driver: none
+      driver: 'local'
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
 
   mongo-express:
+    container_name: mongo-express
     depends_on:
       - mongodb
     image: mongo-express
     restart: always
-    logging:
-      driver: none
+    # logging:
+    #   driver: none
     ports:
       - 8083:8081
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
       ME_CONFIG_MONGODB_URL: mongodb://root:example@mongodb:27017/    
+      ME_CONFIG_MONGODB_SERVER: mongodb

@@ -22,8 +22,7 @@ const usersSchema = new mongoose.Schema({
 	},
 	isManager: {
 		type: Boolean,
-		required: [true, "Se o usuário é gestor deve ser informado."],
-		unique: true
+		required: [true, "Se o usuário é gestor deve ser informado."]
 	},
 });
 

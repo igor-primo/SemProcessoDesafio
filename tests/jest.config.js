@@ -2,5 +2,6 @@ module.exports = {
 	collectCoverage: true,
 	bail: true,
 	displayName: "Space Travel",
-	verbose: true
+	verbose: true,
+	testTimeout: 10000
 };

@@ -1,0 +1,1075 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "SpaceTravel API",
+    "description": "API",
+    "version": "1.0.0"
+  },
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "description": "Endpoint para autenticação.",
+        "parameters": [
+          {
+            "name": "object",
+            "in": "body",
+            "description": "Dados para cadastrar usuário.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/user"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Usuário cadastrado.",
+            "schema": {
+              "$ref": "#/definitions/userCreated"
+            }
+          },
+          "400": {
+            "description": "Erro de validação de dados de entrada.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "tags": [
+          "Autenticação"
+        ],
+        "description": "Endpoint para fazer login.",
+        "parameters": [
+          {
+            "name": "object",
+            "in": "body",
+            "description": "Dados para fazer login.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/loginData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuário logado.",
+            "schema": {
+              "$ref": "#/definitions/userLogged"
+            }
+          },
+          "400": {
+            "description": "Erro de validação.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "404": {
+            "description": "Usuário não pode ser autenticado ou autorizado.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/travel": {
+      "get": {
+        "tags": [
+          "Viagens"
+        ],
+        "description": "Endpoint para resgatar uma lista de viagens.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso ao construir lista de viagens.",
+            "schema": {
+              "$ref": "#/definitions/travelList"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Viagens"
+        ],
+        "description": "Endpoint para gestor cadastrar viagens.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Travel Data Object",
+            "in": "body",
+            "description": "Objeto com dados da viagem a ser cadastrada.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/travel"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "schema": {
+              "$ref": "#/definitions/travelPosted"
+            }
+          },
+          "400": {
+            "description": "Erro de validação dos dados de entrada.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/travel/change_scheduled_status": {
+      "put": {
+        "tags": [
+          "Viagens"
+        ],
+        "description": "Endpoint para mudar o status de cancelamento ou agendamento de uma viagem.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "object",
+            "in": "body",
+            "description": "Objeto contendo _id da viagem e o seu estado atual, se agendado ou não (scheduled).",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/dataToChangeScheduled"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/travelPosted"
+            }
+          },
+          "400": {
+            "description": "Erro de validação.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/travel/{_id}/reschedule": {
+      "put": {
+        "tags": [
+          "Viagens"
+        ],
+        "description": "Endpoint para remarcar viagem. O usuário precisa ser gestor.",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "object",
+            "in": "body",
+            "description": "Dados a serem modificados. Podem ser date, arrivalTime, departureTime. Pelo menos precisa ser informado.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/rescheduleData"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados modificados.",
+            "schema": {
+              "$ref": "#/definitions/travelPosted"
+            }
+          },
+          "400": {
+            "description": "Erro de validação.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/passage/user/get": {
+      "get": {
+        "tags": [
+          "Passagens"
+        ],
+        "description": "Endpoint para resgatar passagens de um usuário.",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso ao constuir o vetor de passagens",
+            "schema": {
+              "$ref": "#/definitions/userPassagesArray"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/passage/{_id}/get": {
+      "get": {
+        "tags": [
+          "Passagens"
+        ],
+        "description": "Endpoint para resgatar dados detalhados de uma passagem específica. Retorna também a viagem associada.",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso ao construir o objeto de passagem.",
+            "schema": {
+              "$ref": "#/definitions/passageToBeReturned"
+            }
+          },
+          "400": {
+            "description": "Erro de validação do _id.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/passage/{_id}/reserve": {
+      "put": {
+        "tags": [
+          "Passagens"
+        ],
+        "description": "Endpoint para fazer reserva de viagem, retornando passagem e cartão de confirmação.",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "object",
+            "in": "body",
+            "description": "Dados de pagamento junto com o número de assentos a se reservar.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/reservationInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso ao fazer reserva e confirmar pagamento.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "400": {
+            "description": "Erro de validação dos dados de entrada.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "403": {
+            "description": "Dado validado mas rejeitado pela lógica do sistema.",
+            "schema": {
+              "$ref": "#/definitions/validationErrorMsg"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/passage/{_idP}/change": {
+      "put": {
+        "tags": [
+          "Passagens"
+        ],
+        "description": "Endpoint para trocar a passagem para uma viagem por outra.",
+        "parameters": [
+          {
+            "name": "_idP",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "object",
+            "in": "body",
+            "description": "Objeto contendo _id da viagem",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/passageToBeChanged"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Passagem modificada para apontar para outra viagem.",
+            "schema": {
+              "$ref": "#/definitions/passageToBeReturned"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    },
+    "/passage/{_id}/cancel": {
+      "put": {
+        "tags": [
+          "Passagens"
+        ],
+        "description": "Endpoint para cancelar uma passagem.",
+        "parameters": [
+          {
+            "name": "_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "Token de autenticação",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sucesso ao cancelar passagem e conseguir reembolso.",
+            "schema": {
+              "$ref": "#/definitions/reserveOutputDataForCancellation"
+            }
+          },
+          "500": {
+            "description": "Erro interno de sistema.",
+            "schema": {
+              "$ref": "#/definitions/internalErrorMsg"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "user": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "example": "Igor Primo"
+        },
+        "email": {
+          "type": "string",
+          "example": "igor@email.com"
+        },
+        "isManager": {
+          "type": "boolean",
+          "example": true
+        },
+        "password": {
+          "type": "string",
+          "example": "123hihihi456"
+        }
+      }
+    },
+    "validationErrorMsg": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Mensagem de erro."
+        }
+      }
+    },
+    "internalErrorMsg": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Erro interno de sistema."
+        }
+      }
+    },
+    "userCreated": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "SomeHash"
+        },
+        "__v": {
+          "type": "string",
+          "example": "SomeVersionKey"
+        },
+        "username": {
+          "type": "string",
+          "example": "Igor Primo"
+        },
+        "email": {
+          "type": "string",
+          "example": "igor@email.com"
+        },
+        "isManager": {
+          "type": "boolean",
+          "example": true
+        },
+        "password": {
+          "type": "string",
+          "example": "123hihihi456"
+        }
+      }
+    },
+    "loginData": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "example": "igor@email.com"
+        },
+        "password": {
+          "type": "string",
+          "example": "123hihihi456"
+        }
+      }
+    },
+    "userLogged": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "SomeHash"
+        },
+        "__v": {
+          "type": "string",
+          "example": "SomeVersionKey"
+        },
+        "email": {
+          "type": "string",
+          "example": "igor@email.com"
+        },
+        "username": {
+          "type": "string",
+          "example": "Igor Primo"
+        },
+        "isManager": {
+          "type": "boolean",
+          "example": true
+        },
+        "authToken": {
+          "type": "string",
+          "example": "SomeJWT"
+        }
+      }
+    },
+    "travelList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "destiny": {
+            "type": "string",
+            "example": "Mars"
+          },
+          "date": {
+            "type": "string",
+            "example": "2023-10-10T00:00:00.000Z"
+          },
+          "departureTime": {
+            "type": "string",
+            "example": "2023-09-22T15:43:19.084Z"
+          },
+          "arrivalTime": {
+            "type": "string",
+            "example": "2023-09-22T15:43:19.084Z"
+          },
+          "price": {
+            "type": "string",
+            "example": "$Σ300,00"
+          },
+          "seatsAvailable": {
+            "type": "number",
+            "example": 25
+          },
+          "scheduled": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      }
+    },
+    "travel": {
+      "type": "object",
+      "properties": {
+        "destiny": {
+          "type": "string",
+          "example": "Mars"
+        },
+        "date": {
+          "type": "string",
+          "example": "2023-10-10T00:00:00.000Z"
+        },
+        "departureTime": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        },
+        "arrivalTime": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        },
+        "price": {
+          "type": "string",
+          "example": "$Σ300,00"
+        },
+        "seatsAvailable": {
+          "type": "number",
+          "example": 25
+        },
+        "scheduled": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "travelPosted": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "SomeHash"
+        },
+        "__v": {
+          "type": "string",
+          "example": "SomeVersionKey"
+        },
+        "destiny": {
+          "type": "string",
+          "example": "Mars"
+        },
+        "date": {
+          "type": "string",
+          "example": "2023-10-10T00:00:00.000Z"
+        },
+        "departureTime": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        },
+        "arrivalTime": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        },
+        "price": {
+          "type": "string",
+          "example": "$Σ300,00"
+        },
+        "seatsAvailable": {
+          "type": "number",
+          "example": 25
+        },
+        "scheduled": {
+          "type": "boolean",
+          "example": true
+        }
+      }
+    },
+    "dataToChangeScheduled": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "SomeHash"
+        },
+        "scheduled": {
+          "type": "boolean",
+          "example": false
+        }
+      }
+    },
+    "rescheduleData": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        },
+        "arrivalTime": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        },
+        "departureTime": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        }
+      }
+    },
+    "passageToBeReturned": {
+      "type": "object",
+      "properties": {
+        "passage": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "__v": {
+              "type": "string",
+              "example": "SomeVersionKey"
+            },
+            "travelId": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "userId": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "scheduled": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        },
+        "travel": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "__v": {
+              "type": "string",
+              "example": "SomeVersionKey"
+            },
+            "destiny": {
+              "type": "string",
+              "example": "Mars"
+            },
+            "date": {
+              "type": "string",
+              "example": "2023-10-10T00:00:00.000Z"
+            },
+            "departureTime": {
+              "type": "string",
+              "example": "2023-09-22T15:43:19.084Z"
+            },
+            "arrivalTime": {
+              "type": "string",
+              "example": "2023-09-22T15:43:19.084Z"
+            },
+            "price": {
+              "type": "string",
+              "example": "$Σ300,00"
+            },
+            "seatsAvailable": {
+              "type": "number",
+              "example": 25
+            },
+            "scheduled": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        }
+      }
+    },
+    "userPassagesArray": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "passage": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "SomeHash"
+              },
+              "__v": {
+                "type": "string",
+                "example": "SomeVersionKey"
+              },
+              "travelId": {
+                "type": "string",
+                "example": "SomeHash"
+              },
+              "userId": {
+                "type": "string",
+                "example": "SomeHash"
+              },
+              "scheduled": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          },
+          "travel": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "SomeHash"
+              },
+              "__v": {
+                "type": "string",
+                "example": "SomeVersionKey"
+              },
+              "destiny": {
+                "type": "string",
+                "example": "Mars"
+              },
+              "date": {
+                "type": "string",
+                "example": "2023-10-10T00:00:00.000Z"
+              },
+              "departureTime": {
+                "type": "string",
+                "example": "2023-09-22T15:43:19.084Z"
+              },
+              "arrivalTime": {
+                "type": "string",
+                "example": "2023-09-22T15:43:19.084Z"
+              },
+              "price": {
+                "type": "string",
+                "example": "$Σ300,00"
+              },
+              "seatsAvailable": {
+                "type": "number",
+                "example": 25
+              },
+              "scheduled": {
+                "type": "boolean",
+                "example": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "reserveOutputData": {
+      "type": "object",
+      "properties": {
+        "passage": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "__v": {
+              "type": "string",
+              "example": "SomeVersionKey"
+            },
+            "travelId": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "userId": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "scheduled": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        },
+        "confirmationCard": {
+          "type": "object",
+          "properties": {
+            "transactionDate": {
+              "type": "string",
+              "example": "2023-09-22T15:43:19.084Z"
+            },
+            "merchantName": {
+              "type": "string",
+              "example": "Space Travel LTDA."
+            },
+            "merchantContactNumber": {
+              "type": "string",
+              "example": "9999-9999"
+            },
+            "paymentDetails": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "example": "$∑300"
+                },
+                "currency": {
+                  "type": "string",
+                  "example": "Estalecas ($∑)"
+                },
+                "decription": {
+                  "type": "string",
+                  "example": "Mensagem de descrição do pagamento."
+                },
+                "paymentMethod": {
+                  "type": "string",
+                  "example": "debit"
+                },
+                "billing": {}
+              }
+            },
+            "message": {
+              "type": "string",
+              "example": "Mensagem referente ao pagamento."
+            },
+            "passageId": {
+              "type": "string",
+              "example": "SomeHash"
+            }
+          }
+        }
+      }
+    },
+    "reservationInput": {
+      "type": "object",
+      "properties": {
+        "numSeatsToReserve": {
+          "type": "number",
+          "example": 2
+        },
+        "cardNumber": {
+          "type": "string",
+          "example": "888888"
+        },
+        "expirationDate": {
+          "type": "string",
+          "example": "2023-09-22T15:43:19.084Z"
+        },
+        "cvv": {
+          "type": "string",
+          "example": "288"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "example": "debit"
+        }
+      }
+    },
+    "passageToBeChanged": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "SomeHash"
+        }
+      }
+    },
+    "reserveOutputDataForCancellation": {
+      "type": "object",
+      "properties": {
+        "passage": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "__v": {
+              "type": "string",
+              "example": "SomeVersionKey"
+            },
+            "travelId": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "userId": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "scheduled": {
+              "type": "boolean",
+              "example": true
+            }
+          }
+        },
+        "refundCard": {
+          "type": "object",
+          "properties": {
+            "transactionDate": {
+              "type": "string",
+              "example": "2023-09-22T15:43:19.084Z"
+            },
+            "merchantName": {
+              "type": "string",
+              "example": "Space Travel LTDA."
+            },
+            "merchantContactNumber": {
+              "type": "string",
+              "example": "9999-9999"
+            },
+            "paymentDetails": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "string",
+                  "example": "$∑300"
+                },
+                "currency": {
+                  "type": "string",
+                  "example": "Estalecas ($∑)"
+                },
+                "decription": {
+                  "type": "string",
+                  "example": "Mensagem de descrição do pagamento."
+                },
+                "paymentMethod": {
+                  "type": "string",
+                  "example": "debit"
+                },
+                "billing": {}
+              }
+            },
+            "message": {
+              "type": "string",
+              "example": "Mensagem referente ao pagamento."
+            },
+            "passageId": {
+              "type": "string",
+              "example": "SomeHash"
+            },
+            "refunded": {
+              "type": "boolean",
+              "example": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

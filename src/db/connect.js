@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const connectionString = process.env.MONGODB_CRED;
 
+mongoose.set('bufferCommands', false);
+
 const dbconnect = (dbName) => {
 	const options = {
 		dbName: dbName,
@@ -17,7 +19,7 @@ const dbdropall = async collection => {
 	await mongoose.
 		connection.
 		collections[collection].
-		drop();
+		  drop();
 };
 
 module.exports = {dbconnect, dbdisconnect, dbdropall};

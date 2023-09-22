@@ -49,6 +49,35 @@ associado a ela por referenciação de _id.
   por simplicidade em um sistema pequeno. Na medida do possível foi
   utilizado reutilização de código. Foi utilizado o framework Jest por
   ser simples e possuir funcionalidade de coverage.
+* Inicialização da aplicação
+Para desenvolvimento dessa aplicação foi utilizado o Docker. Essa
+escolha é feita para melhor distribuir a configuração da pilha de
+software como um todo em várias máquinas, caso necessário. A
+utilização do conveniente campo {logging: driver: none} leva a
+comportamentos inesperados na utilização conjunta da API e do
+mongo-express, o que deve ser futuramente investigado.
+Por isso, a melhor maneira de se levantar a pilha de
+aplicação é utilizando o docker-compose com a bandeira --detach e
+depois utilizar a função 'logs' do docker para observar as métricas da
+API, caso haja.
+
+#+begin_src sh
+  docker-compose up --detach --force-recreate && docker logs space-travel-api --follow
+#+end_src
+
+Nesse primeiro momento, o comando de entrada para o container da API
+executa os testes em um banco de dados destinado para testes e logo
+após, gera a documentação Swagger e executa a API apontando para outro banco de dados.
+
+A documentação Swagger da API pode ser visualizada na rota
+http://localhost:8082/apidocs, caso tenha sido essa porta configurada do
+arquivo docker-compose.yaml.
+
+Para derrubar:
+
+#+begin_src sh
+  docker-compose down
+#+end_src
 * TODO TODO
 - Fortificar models.
 * Possíveis melhoras
@@ -64,3 +93,4 @@ associado a ela por referenciação de _id.
 - Utilizar um balanceador de carga como PM2 para gerenciar processos
   executando a aplicação.
 - Implementar funcionalidades de remoção de dados.
+- Verificar se a destruição de coleções após cada teste está correta.

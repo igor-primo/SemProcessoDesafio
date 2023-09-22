@@ -2,16 +2,19 @@ const request = require("supertest");
 const app = require("../src/app.js");
 const {dbconnect, dbdisconnect, dbdropall} = require("../src/db/connect.js");
  
-beforeEach(async () => { 
+beforeAll(async () => { 
 	await dbconnect('SpaceTravelTest'); 
 });
 
-afterEach(async () => {
-	await dbdropall('users');
-	await dbdropall('travelmanagements');
-	await dbdropall('passages');
-	await dbdisconnect();
+afterAll(async () => { 
+	await dbdisconnect('SpaceTravelTest'); 
 });
+
+// afterEach(async () => {
+// 	await dbdropall('users');
+// 	await dbdropall('travelmanagements');
+// 	await dbdropall('passages');
+// });
 
 // helper data and helper functions
 
@@ -167,6 +170,10 @@ const _changePassage = async (params) => {
 
 describe("user authentication", () => {
 
+	afterEach(async () => {
+		await dbdropall('users');
+	});
+
 	test("signup user", async () => {
 		const {password, ...body} = signupBody;
 
@@ -190,6 +197,10 @@ describe("user authentication", () => {
 
 describe("user authentication failure cases", () => {
 	// failure cases
+
+	afterEach(async () => {
+		await dbdropall('users');
+	});
 
 	test("signup username ommitted", async () => {
 		const {username, ...body} = signupBody;
@@ -273,6 +284,11 @@ describe("user authentication failure cases", () => {
 
 
 describe("travel management", () => {
+
+	afterEach(async () => {
+		await dbdropall('users');
+		await dbdropall('travelmanagements');
+	});
 
 	test("travel registration by manager", async () => {
 
@@ -379,6 +395,11 @@ describe("travel management failure cases", () => {
 
 	//failure cases
 
+	afterEach(async () => {
+		await dbdropall('users');
+		await dbdropall('travelmanagements');
+	});
+
 	test("travel registration by non manager", async () => {
 
 		await signup(userNonManager);
@@ -427,6 +448,14 @@ describe("travel management failure cases", () => {
 
 
 describe("passage management", () => {
+
+	afterEach(async () => {
+		await dbdropall('users');
+		await dbdropall('travelmanagements');
+		await dbdropall('passages');
+	});
+
+
 	test("reserving up until 2 seats", async () => {
 		await signup(userManager);
 		await signup(userNonManager);
@@ -559,7 +588,8 @@ describe("passage management", () => {
 
 		expect(response._body).toEqual(
 			expect.objectContaining({
-				_id: expect.anything()
+				passage: expect.anything(),
+				travel: expect.anything()				
 			})
 		);
 		
@@ -567,6 +597,13 @@ describe("passage management", () => {
 });
 
 describe("passage management failure cases", () => {
+
+	afterEach(async () => {
+		await dbdropall('users');
+		await dbdropall('travelmanagements');
+		await dbdropall('passages');
+		await dbdropall('billingmanagements');
+	});
 
 	test("reserving up until 2 seats when there is less than 2", async () => {
 		await signup(userManager);

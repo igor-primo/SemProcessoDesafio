@@ -609,11 +609,11 @@
           },
           "departureTime": {
             "type": "string",
-            "example": "2023-09-22T15:43:19.084Z"
+            "example": "2023-09-24T12:56:18.919Z"
           },
           "arrivalTime": {
             "type": "string",
-            "example": "2023-09-22T15:43:19.084Z"
+            "example": "2023-09-24T12:56:18.919Z"
           },
           "price": {
             "type": "string",
@@ -643,11 +643,11 @@
         },
         "departureTime": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         },
         "arrivalTime": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         },
         "price": {
           "type": "string",
@@ -684,11 +684,11 @@
         },
         "departureTime": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         },
         "arrivalTime": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         },
         "price": {
           "type": "string",
@@ -722,15 +722,15 @@
       "properties": {
         "date": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         },
         "arrivalTime": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         },
         "departureTime": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         }
       }
     },
@@ -783,11 +783,11 @@
             },
             "departureTime": {
               "type": "string",
-              "example": "2023-09-22T15:43:19.084Z"
+              "example": "2023-09-24T12:56:18.919Z"
             },
             "arrivalTime": {
               "type": "string",
-              "example": "2023-09-22T15:43:19.084Z"
+              "example": "2023-09-24T12:56:18.919Z"
             },
             "price": {
               "type": "string",
@@ -856,11 +856,11 @@
               },
               "departureTime": {
                 "type": "string",
-                "example": "2023-09-22T15:43:19.084Z"
+                "example": "2023-09-24T12:56:18.919Z"
               },
               "arrivalTime": {
                 "type": "string",
-                "example": "2023-09-22T15:43:19.084Z"
+                "example": "2023-09-24T12:56:18.919Z"
               },
               "price": {
                 "type": "string",
@@ -912,7 +912,7 @@
           "properties": {
             "transactionDate": {
               "type": "string",
-              "example": "2023-09-22T15:43:19.084Z"
+              "example": "2023-09-24T12:56:18.919Z"
             },
             "merchantName": {
               "type": "string",
@@ -969,7 +969,7 @@
         },
         "expirationDate": {
           "type": "string",
-          "example": "2023-09-22T15:43:19.084Z"
+          "example": "2023-09-24T12:56:18.919Z"
         },
         "cvv": {
           "type": "string",
@@ -1023,7 +1023,7 @@
           "properties": {
             "transactionDate": {
               "type": "string",
-              "example": "2023-09-22T15:43:19.084Z"
+              "example": "2023-09-24T12:56:18.919Z"
             },
             "merchantName": {
               "type": "string",

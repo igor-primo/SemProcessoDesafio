@@ -4,6 +4,8 @@ const wpr = require("../wrappers/nextWpr.js");
 const {customError} = require("../wrappers/errorWpr.js");
 const usersModel = require("../models/usersModel.js");
 
+var emailRegex = /^[-!#$%&'*+\/0-9=?A-Z^_a-z{|}~](\.?[-!#$%&'*+\/0-9=?A-Z^_a-z`{|}~])*@[a-zA-Z0-9](-*\.?[a-zA-Z0-9])*\.[a-zA-Z](-?[a-zA-Z0-9])+$/;
+
 const signup = wpr(async (req, res, next) => {
 	/*
 	  #swagger.tags = ['Autenticação']
@@ -35,10 +37,15 @@ const signup = wpr(async (req, res, next) => {
 	if (!password)
 		throw new customError(400, "Senha não informada.");
 
+	if(!emailRegex.test(email))
+		throw new customError(400, "E-mail inválido.");
+
+	const emailLowerCase = email.toLowerCase();
+
 	const salt = bcrypt.genSaltSync(10);
 	const hashedPass = bcrypt.hashSync(password, salt);
 	const result = await usersModel.create({
-		email,
+		email: emailLowerCase,
 		username,
 		password: hashedPass,
 		isManager
@@ -83,7 +90,12 @@ const signin = wpr(async (req, res, next) => {
 	if (!password)
 		throw new customError(404, "Senha não informada.");
 
-	const result = await usersModel.find({ email });
+	if(!emailRegex.test(email))
+		throw new customError(404, "E-mail inválido.");
+
+	const emailLowerCase = email.toLowerCase();
+
+	const result = await usersModel.find({ email: emailLowerCase });
 	result.forEach(obj => {
 		const objReal = obj.toObject();
 		if (bcrypt.compareSync(password, objReal.password) == true) {

@@ -84,7 +84,6 @@ Para derrubar:
 - Implementar rotação de chaves assimétricas.
 - Procurar e implementar técnicas melhores
   de referenciação de documentos no Mongo.
-- Fazer documentação dos endpoints via Swagger.
 - Refinar e clarificar testes especificando mais detalhes esperados
   das saídas.
 - Refatoração do arquivo de testes para utilizar padrões OO para
@@ -93,4 +92,3 @@ Para derrubar:
 - Utilizar um balanceador de carga como PM2 para gerenciar processos
   executando a aplicação.
 - Implementar funcionalidades de remoção de dados.
-- Verificar se a destruição de coleções após cada teste está correta.

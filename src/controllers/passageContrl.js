@@ -115,8 +115,6 @@ const reserve = wpr(async (req, res) => {
 	  }
 	*/
 
-	// TODO: fix the case in which a person buys more than 2 seats in different orders
-
 	const { numSeatsToReserve, cardNumber, expirationDate, cvv, paymentMethod } = req.body;
 
 	if (2 < numSeatsToReserve || numSeatsToReserve <= 0)
@@ -228,23 +226,53 @@ const changePassage = wpr(async (req, res) => {
 	// implemented in another module. Changing date or destiny can be implemented by
 	// changing the reference to travel in the Passages collection.
 
-	// TODO: add filters and pagination to getTravels
 	// TODO: fix case in which a person tries to change to a travel with too few seats available
-	// TODO: update seats available too
-
 	const { _id } = req.body;	// _id of the chosen travel
 	const { _idP } = req.params;
 
-	const newPassage = await passageModel.
-		findByIdAndUpdate(_idP,
-			{ travelId: _id },
-			{
-				new: true, runValidators: true
-			});
+	let newPassage = {}, newTravel = {};
 
-	const travel = await managementModel.findById(newPassage.travelId);
+	const session = await passageModel.startSession();
 
-	return res.status(200).json({passage: newPassage, travel});
+	await session.withTransaction(async () => {
+		const passage = await passageModel.findById({_id: _idP});
+		const travel = await managementModel.findById(_id);
+
+		const newSeats = travel.seatsAvailable - passage.numSeatsReserved;
+		if(newSeats <= 0 && passage.numSeatsReserved != 1)
+			throw new customError(404, "Não há assentos disponíveis.");
+
+		// Update seats in previous travel
+
+		let oldTravel = await managementModel.findById({_id: passage.travelId});
+		oldTravel.seatsAvailable += passage.numSeatsReserved;
+		const available = oldTravel.seatsAvailable;
+		await managementModel.findByIdAndUpdate(
+			{_id: passage.travelId},
+			{seatsAvailable: available}
+		);
+
+		// Set seats in actual travel
+
+		await managementModel.findByIdAndUpdate(
+			{_id: _id},
+			{seatsAvailable: newSeats}
+		);
+
+		// Actually update passage
+
+		newPassage = await passageModel.
+			findByIdAndUpdate(_idP,
+				{ travelId: _id },
+				{
+					new: true, runValidators: true
+				});
+		
+		newTravel = await managementModel.findById(newPassage.travelId);
+	});
+	session.endSession();
+
+	return res.status(200).json({passage: newPassage, travel: newTravel});
 });
 
 const cancelPassage = wpr(async (req, res) => {

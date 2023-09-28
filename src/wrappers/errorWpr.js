@@ -16,7 +16,8 @@ const errorHandler = (err, req, res, next) => {
 	if(err instanceof mongoose.Error.ValidationError)
 		return res.status(400).json({message});
 
-	// TODO: handle cast errors
+	if(err instanceof mongoose.Error.CastError)
+		return res.status(400).json({message: "Erro de validação do banco de dados."});
 
 	return res.status(500).json({message: "Erro interno de sistema."});
 }
